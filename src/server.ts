@@ -3,6 +3,7 @@ import express from "express";
 import { accountByKey, config } from "./config.js";
 import { gatewayData as data } from "./data-source.js";
 import { processCase, submitCase } from "./pipeline.js";
+import { pollOnce } from "./poller.js";
 import { findStuckCases, getCase, getHostedFile, listCases, migrate, updateCase, upsertNewCase, type CaseStatus } from "./store.js";
 import { getDispute, type WooviDispute } from "./woovi.js";
 
@@ -123,3 +124,10 @@ for (const c of await findStuckCases(10)) {
   void processCase(c.id, data);
 }
 app.listen(config.port, () => console.log(`med-agent ouvindo na porta ${config.port} (modo ${config.submitMode})`));
+
+// Varredura periódica das disputas (pega o que o webhook perdeu).
+const pollMinutes = Number(process.env.POLL_INTERVAL_MINUTES ?? 15);
+if (pollMinutes > 0) {
+  setTimeout(() => void pollOnce().catch((e) => console.error("poll", e)), 30_000);
+  setInterval(() => void pollOnce().catch((e) => console.error("poll", e)), pollMinutes * 60_000);
+}

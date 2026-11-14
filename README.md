@@ -12,7 +12,7 @@ Recebe MEDs das subcontas Woovi, investiga a venda nos dados do gateway com o Cl
                                    │ HTTPS
 ┌──────────────────────────── Railway (agentes) ─────────────────────────────┐
 │  med-agent (web)          webhook da Woovi · API de revisão · arquivos      │
-│  med-agent-poller (cron)  a cada 15 min: pega MEDs que o webhook perdeu     │
+│  (no mesmo serviço)       a cada 15 min: pega MEDs que o webhook perdeu     │
 │  Postgres                 casos, decisões, resultados                       │
 └──────────────────────────────▲──────────────────────────────▲──────────────┘
                                │ webhooks OPENPIX:DISPUTE_*    │ POST /files, /dispute/{id}/evidence
@@ -34,10 +34,7 @@ Se o agente não recomendar defesa: `NOT_DEFENDED` (aceitar devolução ou risco
 6. `med-agent` → **Settings**:
    - **Networking → Generate Domain** (vira a URL dos webhooks);
    - **Deploy → Healthcheck Path** = `/health`.
-7. Serviço de cron: **+ New → GitHub Repo** (o mesmo repositório). Renomeie para `med-agent-poller` e configure:
-   - **Settings → Deploy → Custom Start Command** = `node dist/poller.js`
-   - **Settings → Deploy → Cron Schedule** = `*/15 * * * *`
-   - mesmas variáveis do passo 5.
+7. A varredura de disputas roda dentro do próprio serviço a cada 15 min (`POLL_INTERVAL_MINUTES`, `0` desliga). Não precisa de serviço de cron.
 8. Teste: `https://SEU_DOMINIO/health` deve responder `{"ok":true}`.
 
 > O Railway descontinuou o `railway.json`/`railway.toml` (serviços novos não aceitam mais), por isso a configuração é pelo painel + Dockerfile.

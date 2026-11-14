@@ -1,6 +1,6 @@
 # Imagem única usada pelos dois serviços no Railway:
 #   med-agent (web)    -> comando padrão abaixo
-#   med-agent-poller   -> Start Command: node dist/poller.js  + Cron Schedule: */15 * * * *
+#   (a varredura periódica roda dentro do serviço web)
 FROM node:22-slim AS build
 WORKDIR /app
 COPY package*.json ./
